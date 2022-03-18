@@ -14,3 +14,14 @@ file.
 Right now this simply does a pretty shifting rainbow pattern, but I hope to make
 it a bit nicer over time. (You know, in all the time that makers choose to go
 back to a project largely in the "done" category.)
+
+## Power
+
+For the RainbowChase patterns, a 1A power supply seems to be enough when showing
+the LEDs at full brightness. For patterns with more of the LEDs on more of the
+time, a larger power supply will be needed. I'm running with a (5A supply off
+Amazon)[https://smile.amazon.com/gp/product/B078RT3ZPS/].
+
+## Code Style
+
+I'm mostly a Python guy, so I kind of write Python even in C++ right now.
