@@ -6,6 +6,8 @@
 #include <FastLED.h>
 #define FASTLED_INTERNAL
 
+#include "ledhelpers.h"
+
 #define LEDS_PER_SEGMENT 14
 
 class RainbowChase
@@ -35,8 +37,8 @@ RainbowChase::RainbowChase(CRGB *ledarray, uint8_t color, uint8_t progression, i
 
 void RainbowChase::Draw(uint8_t fade_factor=40)
 {
-    unsigned long now = millis();
-    if (now > next_draw)
+    // unsigned long now = millis();
+    if (millis() > next_draw)
     {
         // Fade the existing pixels
         for (int i = 0; i < led_count; i++)
@@ -48,16 +50,10 @@ void RainbowChase::Draw(uint8_t fade_factor=40)
         leds[position] = CHSV(hue, 255, 255);
 
         // Increment the head
-        if (direction == 1 && position == led_count - 1)
-        {
-            direction = -1;
-        }
-        else if (direction == -1 && position == 0)
-        {
-            direction = 1;
-        }
+        direction = new_direction(direction, position, led_count);
         position += direction;
 
+        // Update the hue as we cross each segment boundary.
         if (position % LEDS_PER_SEGMENT == 0)
         {
             hue += hue_progression;
