@@ -35,6 +35,7 @@ Blue - Blue
 
 // int lengths[] = {154, 168, 84, 154}; // Strips are different lengths because I am a dumb
 uint8_t brightness = 255;
+uint8_t fade_factor = 20;
 
 CRGBArray<LEN0> leds0;
 CRGBArray<LEN1> leds1;
@@ -46,10 +47,10 @@ CRGBArray<LEN3> leds3;
 // CRGB leds2[LEN2];
 // CRGB leds3[LEN3];
 
-RainbowChase stripred = RainbowChase(leds0, random8(), LEN0, 50);
-RainbowChase stripblue = RainbowChase(leds1, random8(), LEN1, 40);
-RainbowChase stripgreen = RainbowChase(leds2, random8(), LEN2, 75);
-RainbowChase stripviolet = RainbowChase(leds3, random8(), LEN3, 100);
+RainbowChase stripred = RainbowChase(leds0, random8(), 17, LEN0, 50);
+RainbowChase stripblue = RainbowChase(leds1, random8(), 19, LEN1, 40);
+RainbowChase stripgreen = RainbowChase(leds2, random8(), 27, LEN2, 75);
+RainbowChase stripviolet = RainbowChase(leds3, random8(), 7, LEN3, 100);
 
 void setup()
 {
@@ -69,22 +70,22 @@ void setup()
     // Serial.println("Setting pin D1 to red");
     for (i = 0; i < LEN0; i++)
     {
-        leds0[i] = CRGB::Red;
+        leds0[i] = CRGB::Black;
     }
 
     for (i = 0; i < LEN1; i++)
     {
-        leds1[i] = CRGB::Blue;
+        leds1[i] = CRGB::Black;
     }
 
     for (i = 0; i < LEN2; i++)
     {
-        leds2[i] = CRGB::Green;
+        leds2[i] = CRGB::Black;
     }
 
     for (i = 0; i < LEN3; i++)
     {
-        leds3[i] = CRGB::Violet;
+        leds3[i] = CRGB::Black;
     }
 
     FastLED.setBrightness(brightness);
@@ -93,13 +94,19 @@ void setup()
 
 void loop()
 {
-    stripred.Draw();
-    stripblue.Draw();
-    stripgreen.Draw();
-    stripviolet.Draw();
+    stripred.Draw(fade_factor);
+    stripblue.Draw(fade_factor);
+    stripgreen.Draw(fade_factor);
+    stripviolet.Draw(fade_factor);
 
     FastLED.setBrightness(brightness);
     FastLED.show();
+
+    EVERY_N_SECONDS(2)
+    {
+        Serial.print(millis());
+        Serial.println("  Still running!");
+    }
 
     delay(1);
 }

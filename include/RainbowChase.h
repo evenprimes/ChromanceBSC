@@ -7,32 +7,33 @@
 #define FASTLED_INTERNAL
 
 #define LEDS_PER_SEGMENT 14
-#define HUE_PROGRESSION 17
 
 class RainbowChase
 {
     int position;
     CRGB *leds;
     uint8_t hue;
+    uint8_t hue_progression;
     int led_count;
     unsigned long velocity;
     unsigned long next_draw;
     int direction;
 
+
 public:
-    RainbowChase(CRGB *, uint8_t, int, unsigned long);
-    void Draw(void);
+    RainbowChase(CRGB *, uint8_t, uint8_t, int, unsigned long);
+    void Draw(uint8_t);
 };
 
-RainbowChase::RainbowChase(CRGB *ledarray, uint8_t color, int count, unsigned long velocity)
-    : leds(ledarray), hue(color), led_count(count), velocity(velocity)
+RainbowChase::RainbowChase(CRGB *ledarray, uint8_t color, uint8_t progression, int count, unsigned long velocity)
+    : leds(ledarray), hue(color), hue_progression(progression), led_count(count), velocity(velocity)
 {
     position = 0;
     next_draw = 0;
     direction = 1;
 }
 
-void RainbowChase::Draw(void)
+void RainbowChase::Draw(uint8_t fade_factor=40)
 {
     unsigned long now = millis();
     if (now > next_draw)
@@ -40,7 +41,7 @@ void RainbowChase::Draw(void)
         // Fade the existing pixels
         for (int i = 0; i < led_count; i++)
         {
-            leds[i].fadeToBlackBy(40);
+            leds[i].fadeToBlackBy(fade_factor);
         }
 
         // Add a new head dot
@@ -59,7 +60,7 @@ void RainbowChase::Draw(void)
 
         if (position % LEDS_PER_SEGMENT == 0)
         {
-            hue += HUE_PROGRESSION;
+            hue += hue_progression;
         }
 
 
