@@ -22,6 +22,7 @@ Blue - Blue
 
 // #include "SimpleChase.h"
 #include "RainbowChase.h"
+#include "RainbowRipple.h"
 
 #define DATA_PIN1 D1
 #define DATA_PIN2 D2
@@ -33,24 +34,30 @@ Blue - Blue
 #define LEN2 154
 #define LEN3 84
 
+#define VELOCITY_MIN 75
+#define VELOCITY_MAX 200
+
 // int lengths[] = {154, 168, 84, 154}; // Strips are different lengths because I am a dumb
 uint8_t brightness = 255;
 uint8_t fade_factor = 20;
+uint8_t blend_factor = 20;
+int pattern = 1;
+uint8_t sync = 0;
 
 CRGBArray<LEN0> leds0;
 CRGBArray<LEN1> leds1;
 CRGBArray<LEN2> leds2;
 CRGBArray<LEN3> leds3;
 
-// CRGB leds0[LEN0];
-// CRGB leds1[LEN1];
-// CRGB leds2[LEN2];
-// CRGB leds3[LEN3];
-
 RainbowChase stripred = RainbowChase(leds0, random8(), 17, LEN0, 50);
 RainbowChase stripblue = RainbowChase(leds1, random8(), 19, LEN1, 40);
 RainbowChase stripgreen = RainbowChase(leds2, random8(), 27, LEN2, 75);
 RainbowChase stripviolet = RainbowChase(leds3, random8(), 7, LEN3, 100);
+
+RainbowRipple rr1 = RainbowRipple(leds0, LEN0, random8(), 5, 20);
+RainbowRipple rr2 = RainbowRipple(leds1, LEN1, random8(), 17, random16(VELOCITY_MIN, VELOCITY_MAX));
+RainbowRipple rr3 = RainbowRipple(leds2, LEN2, random8(), 13, random16(VELOCITY_MIN, VELOCITY_MAX));
+RainbowRipple rr4 = RainbowRipple(leds3, LEN3, random8(), 11, random16(VELOCITY_MIN, VELOCITY_MAX));
 
 void setup()
 {
@@ -94,19 +101,69 @@ void setup()
 
 void loop()
 {
-    stripred.Draw(fade_factor);
-    stripblue.Draw(fade_factor);
-    stripgreen.Draw(fade_factor);
-    stripviolet.Draw(fade_factor);
-
+    if (pattern == 0)
+    {
+        stripred.Draw(fade_factor);
+        stripblue.Draw(fade_factor);
+        stripgreen.Draw(fade_factor);
+        stripviolet.Draw(fade_factor);
+    }
+    else
+    {
+        rr1.Draw(blend_factor);
+        rr2.Draw(blend_factor);
+        rr3.Draw(blend_factor);
+        rr4.Draw(blend_factor);
+    }
     FastLED.setBrightness(brightness);
     FastLED.show();
 
-    EVERY_N_SECONDS(2)
+    EVERY_N_SECONDS(10)
     {
-        Serial.print(millis());
-        Serial.println("  Still running!");
+        if (sync)
+        {
+            unsigned long new_velocity = random16(VELOCITY_MIN, VELOCITY_MAX);
+            rr1.set_hue_and_progression(0, 2);
+            rr1.set_velocity(new_velocity);
+            rr2.set_hue_and_progression(0, 2);
+            rr2.set_velocity(new_velocity);
+            rr3.set_hue_and_progression(0, 2);
+            rr3.set_velocity(new_velocity);
+            rr4.set_hue_and_progression(0, 2);
+            rr4.set_velocity(new_velocity);
+        }
+        else
+        {
+            rr1.set_hue_and_progression(random8(), random8(1, 7));
+            rr1.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
+            rr2.set_hue_and_progression(random8(), random8(1, 7));
+            rr2.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
+            rr3.set_hue_and_progression(random8(), random8(1, 7));
+            rr3.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
+            rr4.set_hue_and_progression(random8(), random8(1, 7));
+            rr4.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
+        }
+
+        sync = !sync;
     }
+
+    // EVERY_N_SECONDS(2)
+    // {
+    //     Serial.print(millis());
+    //     Serial.println("  Still running!");
+    // }
+
+    // EVERY_N_SECONDS(30)
+    // {
+    //     if (pattern == 0)
+    //     {
+    //         pattern = 1;
+    //     }
+    //     else
+    //     {
+    //         pattern = 0;
+    //     }
+    // }
 
     delay(1);
 }

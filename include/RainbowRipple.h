@@ -35,11 +35,15 @@ class RainbowRipple
 
 public:
     RainbowRipple(CRGB *, int, uint8_t, uint8_t, unsigned long);
-    void Draw(void);
+    void Draw(uint8_t);
+    void set_hue_and_progression(uint8_t, uint8_t);
+    void set_hue(uint8_t);
+    void set_hue_progression(uint8_t);
+    void set_velocity(unsigned long);
 };
 
 RainbowRipple::RainbowRipple(CRGB *leds, int led_count, uint8_t hue, uint8_t hue_progression, unsigned long velocity)
-    : leds(leds), led_count(led_count), hue(hue), hue_progression(hue_progression), velocity(velocity)
+    : leds(leds), hue(hue), hue_progression(hue_progression), led_count(led_count), velocity(velocity)
 {
     direction = 1;
     next_draw = 0;
@@ -47,7 +51,7 @@ RainbowRipple::RainbowRipple(CRGB *leds, int led_count, uint8_t hue, uint8_t hue
     pos2 = led_count - 1;
 }
 
-void RainbowRipple::Draw(void)
+void RainbowRipple::Draw(uint8_t blend_factor = 30)
 {
     if (millis() > next_draw)
     {
@@ -61,7 +65,7 @@ void RainbowRipple::Draw(void)
         // Blend the current strip to the new colors
         for (i = 0; i < led_count; i++)
         {
-            leds[i] = blend(leds[i], temp_hue, 30);
+            leds[i] = blend(leds[i], temp_hue, blend_factor);
         }
         leds[pos1] = CRGB::Black;
         leds[pos2] = CRGB::Black;
@@ -72,5 +76,16 @@ void RainbowRipple::Draw(void)
 
         next_draw = millis() + velocity;
     }
+}
+
+void RainbowRipple::set_hue_and_progression(uint8_t new_hue, uint8_t new_hue_progression)
+{
+    hue = new_hue;
+    hue_progression = new_hue_progression;
+}
+
+void RainbowRipple::set_velocity(unsigned long new_velocity)
+{
+    velocity = new_velocity;
 }
 #endif
