@@ -27,22 +27,22 @@ class RainbowRipple
     int pos1, pos2;
     CRGB *leds;
     uint8_t hue;
-    uint8_t hue_progression;
+    int8_t hue_progression;
     int led_count;
     unsigned long velocity;
     unsigned long next_draw;
     int direction;
 
 public:
-    RainbowRipple(CRGB *, int, uint8_t, uint8_t, unsigned long);
-    void Draw(uint8_t);
-    void set_hue_and_progression(uint8_t, uint8_t);
+    RainbowRipple(CRGB *, int, uint8_t, int8_t, unsigned long);
+    void Draw(int8_t);
+    void set_hue_and_progression(uint8_t, int8_t);
     void set_hue(uint8_t);
-    void set_hue_progression(uint8_t);
+    void set_hue_progression(int8_t);
     void set_velocity(unsigned long);
 };
 
-RainbowRipple::RainbowRipple(CRGB *leds, int led_count, uint8_t hue, uint8_t hue_progression, unsigned long velocity)
+RainbowRipple::RainbowRipple(CRGB *leds, int led_count, uint8_t hue, int8_t hue_progression, unsigned long velocity)
     : leds(leds), hue(hue), hue_progression(hue_progression), led_count(led_count), velocity(velocity)
 {
     direction = 1;
@@ -51,7 +51,7 @@ RainbowRipple::RainbowRipple(CRGB *leds, int led_count, uint8_t hue, uint8_t hue
     pos2 = led_count - 1;
 }
 
-void RainbowRipple::Draw(uint8_t blend_factor = 30)
+void RainbowRipple::Draw(int8_t blend_factor = 30)
 {
     if (millis() > next_draw)
     {
@@ -78,7 +78,7 @@ void RainbowRipple::Draw(uint8_t blend_factor = 30)
     }
 }
 
-void RainbowRipple::set_hue_and_progression(uint8_t new_hue, uint8_t new_hue_progression)
+void RainbowRipple::set_hue_and_progression(uint8_t new_hue, int8_t new_hue_progression)
 {
     hue = new_hue;
     hue_progression = new_hue_progression;

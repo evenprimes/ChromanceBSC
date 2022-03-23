@@ -130,11 +130,11 @@ void loop()
             starting_hue = random8();
             rr1.set_hue_and_progression(starting_hue, 2);
             rr1.set_velocity(new_velocity);
-            rr2.set_hue_and_progression(starting_hue, 2);
+            rr2.set_hue_and_progression(starting_hue, -2);
             rr2.set_velocity(new_velocity);
             rr3.set_hue_and_progression(starting_hue, 2);
             rr3.set_velocity(new_velocity);
-            rr4.set_hue_and_progression(starting_hue, 2);
+            rr4.set_hue_and_progression(starting_hue, -2);
             rr4.set_velocity(new_velocity);
         }
         else
@@ -143,13 +143,13 @@ void loop()
             // around the color wheel. I didn't want the colors to jump TOO much
             // as they change so I'm limiting hue progression to 1-7. I'm not
             // positive that this is the correct range, but it looks good!
-            rr1.set_hue_and_progression(random8(), random8(1, 7));
+            rr1.set_hue_and_progression(random8(), random(-7, 7));
             rr1.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
-            rr2.set_hue_and_progression(random8(), random8(1, 7));
+            rr2.set_hue_and_progression(random8(), random(-7, 7));
             rr2.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
-            rr3.set_hue_and_progression(random8(), random8(1, 7));
+            rr3.set_hue_and_progression(random8(), random(-7, 7));
             rr3.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
-            rr4.set_hue_and_progression(random8(), random8(1, 7));
+            rr4.set_hue_and_progression(random8(), random(-7, 7));
             rr4.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
         }
 
