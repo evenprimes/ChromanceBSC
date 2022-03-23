@@ -17,11 +17,9 @@ Blue - Blue
 
 ******************************************************** */
 
-#include <FastLED.h>
 #define FASTLED_INTERNAL
+#include <FastLED.h>
 
-// #include "SimpleChase.h"
-// #include "RainbowChase.h"
 #include "RainbowRipple.h"
 
 #define DATA_PIN1 D1 // Oops! Probably should not have used D1 since now the onboard LED can't be turned off.
@@ -39,9 +37,7 @@ Blue - Blue
 
 // int lengths[] = {154, 168, 84, 154}; // Strips are different lengths because I am a dumb
 uint8_t brightness = 255;
-// uint8_t fade_factor = 20;
 uint8_t blend_factor = 20;
-int pattern = 1;
 uint8_t sync = 0;
 unsigned long new_velocity = 0;
 uint8_t starting_hue = 0;
@@ -50,11 +46,6 @@ CRGBArray<LEN0> leds0;
 CRGBArray<LEN1> leds1;
 CRGBArray<LEN2> leds2;
 CRGBArray<LEN3> leds3;
-
-// RainbowChase stripred = RainbowChase(leds0, random8(), 17, LEN0, 50);
-// RainbowChase stripblue = RainbowChase(leds1, random8(), 19, LEN1, 40);
-// RainbowChase stripgreen = RainbowChase(leds2, random8(), 27, LEN2, 75);
-// RainbowChase stripviolet = RainbowChase(leds3, random8(), 7, LEN3, 100);
 
 RainbowRipple rr1 = RainbowRipple(leds0, LEN0, random8(), 5, 20);
 RainbowRipple rr2 = RainbowRipple(leds1, LEN1, random8(), 17, random16(VELOCITY_MIN, VELOCITY_MAX));
@@ -103,24 +94,15 @@ void setup()
 
 void loop()
 {
-    if (pattern == 0)
-    {
-        // stripred.Draw(fade_factor);
-        // stripblue.Draw(fade_factor);
-        // stripgreen.Draw(fade_factor);
-        // stripviolet.Draw(fade_factor);
-    }
-    else
-    {
-        rr1.Draw(blend_factor);
-        rr2.Draw(blend_factor);
-        rr3.Draw(blend_factor);
-        rr4.Draw(blend_factor);
-    }
+    rr1.Draw(blend_factor);
+    rr2.Draw(blend_factor);
+    rr3.Draw(blend_factor);
+    rr4.Draw(blend_factor);
+
     FastLED.setBrightness(brightness);
     FastLED.show();
 
-    EVERY_N_SECONDS(15)
+    EVERY_N_SECONDS(20)
     {
         if (sync)
         {
@@ -155,24 +137,6 @@ void loop()
 
         sync = !sync;
     }
-
-    // EVERY_N_SECONDS(2)
-    // {
-    //     Serial.print(millis());
-    //     Serial.println("  Still running!");
-    // }
-
-    // EVERY_N_SECONDS(30)
-    // {
-    //     if (pattern == 0)
-    //     {
-    //         pattern = 1;
-    //     }
-    //     else
-    //     {
-    //         pattern = 0;
-    //     }
-    // }
 
     delay(1);
 }
