@@ -17,6 +17,8 @@ Blue - Blue
 
 ******************************************************** */
 
+// #define DEBUG_PRINTING_
+
 #define FASTLED_INTERNAL
 #include <FastLED.h>
 
@@ -26,6 +28,7 @@ Blue - Blue
 #define DATA_PIN2 D2
 #define DATA_PIN3 D3
 #define DATA_PIN4 D4
+#define POT_PIN A0
 
 #define LEN0 168
 #define LEN1 154
@@ -41,6 +44,7 @@ uint8_t blend_factor = 20;
 uint8_t sync = 0;
 unsigned long new_velocity = 0;
 uint8_t starting_hue = 0;
+uint16_t pot_level = 0;
 
 CRGBArray<LEN0> leds0;
 CRGBArray<LEN1> leds1;
@@ -51,6 +55,8 @@ RainbowRipple rr1 = RainbowRipple(leds0, LEN0, random8(), 5, 20);
 RainbowRipple rr2 = RainbowRipple(leds1, LEN1, random8(), 17, random16(VELOCITY_MIN, VELOCITY_MAX));
 RainbowRipple rr3 = RainbowRipple(leds2, LEN2, random8(), 13, random16(VELOCITY_MIN, VELOCITY_MAX));
 RainbowRipple rr4 = RainbowRipple(leds3, LEN3, random8(), 11, random16(VELOCITY_MIN, VELOCITY_MAX));
+
+uint8_t get_brightness();
 
 void setup()
 {
@@ -88,6 +94,7 @@ void setup()
         leds3[i] = CRGB::Black;
     }
 
+    brightness = get_brightness();
     FastLED.setBrightness(brightness);
     FastLED.show();
 }
@@ -99,6 +106,10 @@ void loop()
     rr3.Draw(blend_factor);
     rr4.Draw(blend_factor);
 
+    brightness = get_brightness();
+    // #ifdef DEBUG_PRINTING_
+    //     Serial.println(brightness);
+    // #endif
     FastLED.setBrightness(brightness);
     FastLED.show();
 
@@ -139,4 +150,13 @@ void loop()
     }
 
     delay(1);
+}
+
+uint8_t get_brightness(void)
+{
+#ifdef DEBUG_PRINTING_
+    Serial.println(analogRead(POT_PIN));
+#endif
+
+    return map(analogRead(POT_PIN), 0, 1023, 0, 255);
 }
