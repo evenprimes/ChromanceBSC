@@ -19,7 +19,7 @@ Blue - Blue
 
 // #define DEBUG_PRINTING_
 
-#define FASTLED_INTERNAL
+#define FASTLED_INTERNAL 1 // Suppresses the compilation banner from FastLED
 #include <FastLED.h>
 
 #include "RainbowRipple.h"
@@ -30,17 +30,20 @@ Blue - Blue
 #define DATA_PIN4 D4
 #define POT_PIN A0
 
-#define LEN0 168
-#define LEN1 154
-#define LEN2 154
-#define LEN3 84
+const uint16_t LEN0 = 168;
+const uint16_t LEN1 = 154;
+const uint16_t LEN2 = 154;
+const uint16_t LEN3 = 84;
 
-#define VELOCITY_MIN 75
-#define VELOCITY_MAX 200
+const uint8_t VELOCITY_MIN = 75;
+const uint8_t VELOCITY_MAX = 200;
+
+const uint8_t SATURATION_MIN = 170;
+const uint8_t SATURATION_MAX = 255;
 
 // int lengths[] = {154, 168, 84, 154}; // Strips are different lengths because I am a dumb
 uint8_t brightness = 255;
-uint8_t blend_factor = 20;
+const uint8_t blend_factor = 20;
 uint8_t sync = 0;
 unsigned long new_velocity = 0;
 uint8_t starting_hue = 0;
@@ -51,7 +54,7 @@ CRGBArray<LEN1> leds1;
 CRGBArray<LEN2> leds2;
 CRGBArray<LEN3> leds3;
 
-RainbowRipple rr1 = RainbowRipple(leds0, LEN0, random8(), 5, 20);
+RainbowRipple rr1 = RainbowRipple(leds0, LEN0, random8(), 5, 5);
 RainbowRipple rr2 = RainbowRipple(leds1, LEN1, random8(), 17, random16(VELOCITY_MIN, VELOCITY_MAX));
 RainbowRipple rr3 = RainbowRipple(leds2, LEN2, random8(), 13, random16(VELOCITY_MIN, VELOCITY_MAX));
 RainbowRipple rr4 = RainbowRipple(leds3, LEN3, random8(), 11, random16(VELOCITY_MIN, VELOCITY_MAX));
@@ -73,7 +76,8 @@ void setup()
 
     FastLED.showColor(CRGB::Black);
 
-    // Serial.println("Setting pin D1 to red");
+#ifdef DEBUG_PRINTING_
+    Serial.println("Setting pin D1 to red");
     for (i = 0; i < LEN0; i++)
     {
         leds0[i] = CRGB::Black;
@@ -93,9 +97,9 @@ void setup()
     {
         leds3[i] = CRGB::Black;
     }
+#endif
 
-    brightness = get_brightness();
-    FastLED.setBrightness(brightness);
+    FastLED.setBrightness(get_brightness());
     FastLED.show();
 }
 
@@ -106,47 +110,77 @@ void loop()
     rr3.Draw(blend_factor);
     rr4.Draw(blend_factor);
 
+#ifdef DEBUG_PRINTING_
     brightness = get_brightness();
-    // #ifdef DEBUG_PRINTING_
-    //     Serial.println(brightness);
-    // #endif
-    FastLED.setBrightness(brightness);
+    Serial.println(brightness);
+#endif
+    FastLED.setBrightness(get_brightness());
     FastLED.show();
 
     EVERY_N_SECONDS(20)
     {
-        if (sync)
+        switch (sync)
         {
+        case 0:
             // Setting the starting hue to a random point around the color wheel.
             // Starting at 0 was... boring.
+            // Also, varying the saturation a bit.
             new_velocity = random16(VELOCITY_MIN, VELOCITY_MAX);
             starting_hue = random8();
             rr1.set_hue_and_progression(starting_hue, 2);
             rr1.set_velocity(new_velocity);
+            rr1.set_saturation_and_progression(random8(SATURATION_MIN, SATURATION_MAX), 0);
             rr2.set_hue_and_progression(starting_hue, -2);
             rr2.set_velocity(new_velocity);
+            rr2.set_saturation_and_progression(random8(SATURATION_MIN, SATURATION_MAX), 0);
             rr3.set_hue_and_progression(starting_hue, 2);
             rr3.set_velocity(new_velocity);
+            rr3.set_saturation_and_progression(random8(SATURATION_MIN, SATURATION_MAX), 0);
             rr4.set_hue_and_progression(starting_hue, -2);
             rr4.set_velocity(new_velocity);
-        }
-        else
-        {
+            rr4.set_saturation_and_progression(random8(SATURATION_MIN, SATURATION_MAX), 0);
+            break;
+
+        case 1:
             // These colors shouldn't sync, so we just start at random points
             // around the color wheel. I didn't want the colors to jump TOO much
             // as they change so I'm limiting hue progression to 1-7. I'm not
             // positive that this is the correct range, but it looks good!
             rr1.set_hue_and_progression(random8(), random(-7, 7));
             rr1.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
+            rr1.set_saturation_and_progression(random8(), random(-2, 2));
             rr2.set_hue_and_progression(random8(), random(-7, 7));
             rr2.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
+            rr2.set_saturation_and_progression(random8(), random(-2, 2));
             rr3.set_hue_and_progression(random8(), random(-7, 7));
             rr3.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
+            rr3.set_saturation_and_progression(random8(), random(-2, 2));
             rr4.set_hue_and_progression(random8(), random(-7, 7));
             rr4.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
+            rr4.set_saturation_and_progression(random8(), random(-2, 2));
+            break;
+
+        case 2:
+            // This is an experiment to vary saturation. Not sure if this will
+            // look good or not.
+            rr1.set_hue_and_progression(random8(), 0);
+            rr1.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
+            rr1.set_saturation_and_progression(random8(), random(-7, 7));
+            rr2.set_hue_and_progression(random8(), 0);
+            rr2.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
+            rr2.set_saturation_and_progression(random8(), random(-7, 7));
+            rr3.set_hue_and_progression(random8(), 0);
+            rr3.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
+            rr3.set_saturation_and_progression(random8(), random(-7, 7));
+            rr4.set_hue_and_progression(random8(), 0);
+            rr4.set_velocity(random16(VELOCITY_MIN, VELOCITY_MAX));
+            rr4.set_saturation_and_progression(random8(), random(-7, 7));
+
+        default:
+            break;
         }
 
-        sync = !sync;
+        sync = random8(3);
     }
 
     delay(1);

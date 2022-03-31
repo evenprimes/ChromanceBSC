@@ -15,40 +15,44 @@ Fingers crossed that it will look decent.
 
 // #define RAINBOWRIPPLE_H_DEBUG
 
+#define FASTLED_INTERNAL 1 // Suppresses the compilation banner from FastLED
 #include <FastLED.h>
-#define FASTLED_INTERNAL
 
 #include "ledhelpers.h"
 
-#define LEDS_PER_SEGMENT 14
+const uint16_t LEDS_PER_SEGMENT = 14;
 
 class RainbowRipple
 {
-    int pos1, pos2;
+    uint16_t pos1, pos2;
     CRGB *leds;
-    uint8_t hue;
-    int8_t hue_progression;
-    int led_count;
-    unsigned long velocity;
+    uint8_t hue, saturation;
+    int8_t hue_progression, sat_progression;
+    uint16_t led_count;
+    uint16_t velocity;
     unsigned long next_draw;
-    int direction;
+    int8_t direction;
 
 public:
-    RainbowRipple(CRGB *, int, uint8_t, int8_t, unsigned long);
+    RainbowRipple(CRGB *, uint16_t, uint8_t, int8_t, uint16_t);
     void Draw(int8_t);
     void set_hue_and_progression(uint8_t, int8_t);
-    void set_hue(uint8_t);
-    void set_hue_progression(int8_t);
+    void set_saturation_and_progression(uint8_t, int8_t);
+    // void set_hue(uint8_t);
+    // void set_hue_progression(int8_t);
     void set_velocity(unsigned long);
+    void set_hue_and_saturation(uint8_t, int8_t, uint8_t, int8_t);
 };
 
-RainbowRipple::RainbowRipple(CRGB *leds, int led_count, uint8_t hue, int8_t hue_progression, unsigned long velocity)
+RainbowRipple::RainbowRipple(CRGB *leds, uint16_t led_count, uint8_t hue, int8_t hue_progression, uint16_t velocity)
     : leds(leds), hue(hue), hue_progression(hue_progression), led_count(led_count), velocity(velocity)
 {
     direction = 1;
     next_draw = 0;
     pos1 = 0;
     pos2 = led_count - 1;
+    saturation = 255;
+    sat_progression = 0;
 }
 
 void RainbowRipple::Draw(int8_t blend_factor = 30)
@@ -60,7 +64,8 @@ void RainbowRipple::Draw(int8_t blend_factor = 30)
 
         // Determine new hue
         hue += hue_progression;
-        temp_hue = CHSV(hue, 255, 255);
+        saturation += sat_progression;
+        temp_hue = CHSV(hue, saturation, 255);
 
         // Blend the current strip to the new colors
         for (i = 0; i < led_count; i++)
@@ -82,6 +87,20 @@ void RainbowRipple::set_hue_and_progression(uint8_t new_hue, int8_t new_hue_prog
 {
     hue = new_hue;
     hue_progression = new_hue_progression;
+}
+
+void RainbowRipple::set_saturation_and_progression(uint8_t new_sat, int8_t new_sat_progression)
+{
+    saturation = new_sat;
+    sat_progression = new_sat_progression;
+}
+
+void RainbowRipple::set_hue_and_saturation(uint8_t new_hue, int8_t new_hue_progression, uint8_t new_sat, int8_t new_sat_progression)
+{
+    hue = new_hue;
+    hue_progression = new_hue_progression;
+    saturation = new_sat;
+    sat_progression = new_sat_progression;
 }
 
 void RainbowRipple::set_velocity(unsigned long new_velocity)
