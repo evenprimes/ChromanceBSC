@@ -15,114 +15,32 @@ Blacl - Black
 Green - Green
 Blue - Blue
 
-The mapping functions for pallettes and patterns using the entire grid were adapted
+The mapping functions for palettes and patterns using the entire grid were adapted
 from: https://github.com/jasoncoon/led-mapper/blob/main/fastled-map-demo/fastled-map-demo.ino
 
 ******************************************************** */
 
 // #define DEBUG_PRINTING_
 
-#define FASTLED_INTERNAL 1 // Suppresses the compilation banner from FastLED
-#include <FastLED.h>
+#include "main.h"
 
 #include "mapping.h"
 #include "RainbowRipple.h"
-
-#define DATA_PIN1 D1
-#define DATA_PIN2 D2
-#define DATA_PIN3 D3
-#define DATA_PIN4 D4 // Oops! Probably should not have used D4 since now the onboard LED can't be turned off.
-#define POT_PIN A0
-
-const uint16_t LEN0 = 168;
-const uint16_t LEN1 = 154;
-const uint16_t LEN2 = 154;
-const uint16_t LEN3 = 84;
+#include "mqttled.h"
 
 CRGBArray<LEN0> leds0;
 CRGBArray<LEN1> leds1;
 CRGBArray<LEN2> leds2;
 CRGBArray<LEN3> leds3;
 
-const uint8_t VELOCITY_MIN = 75;
-const uint8_t VELOCITY_MAX = 200;
-
-const uint8_t SATURATION_MIN = 170;
-const uint8_t SATURATION_MAX = 255;
-
 uint8_t blend_factor = 20;
 uint8_t starting_hue = 0;
 uint8_t pattern_number = 0;
 uint8_t current_pattern = 0;
-uint8_t current_pallette_index = 0;
 uint8_t speed = 30;
 uint8_t offset = 0; // rotating "base color" used by many of the patterns
 uint16_t new_velocity = 0;
 uint16_t pot_level = 0;
-
-CRGBPalette16 current_pallette;
-
-uint8_t get_brightness();
-void assign_led(uint16_t, CRGB);
-void clockwisePalette();
-void counterClockwisePalette();
-void outwardPalette();
-void inwardPalette();
-void northPalette();
-void northEastPalette();
-void eastPalette();
-void southEastPalette();
-void southPalette();
-void southWestPalette();
-void westPalette();
-void northWestPalette();
-void beatsin8Pallette();
-void default_pattern();
-
-// List of patterns to cycle through.  Each is defined as a separate function below.
-typedef void (*SimplePatternList[])();
-SimplePatternList patterns = {
-    // 2D map examples:
-    beatsin8Pallette,
-    clockwisePalette,
-    counterClockwisePalette,
-    outwardPalette,
-    inwardPalette,
-    northPalette,
-    northEastPalette,
-    eastPalette,
-    southEastPalette,
-    southPalette,
-    southWestPalette,
-    westPalette,
-    northWestPalette,
-
-    // standard FastLED demo reel examples:
-    //  rainbow,
-    //  rainbowWithGlitter,
-    //  confetti,
-    //  sinelon,
-    //  juggle,
-    //  bpm
-};
-
-const uint8_t pattern_count = ARRAY_SIZE(patterns);
-uint8_t current_pattern_index = 0; // Index number of which pattern is current
-
-CRGBPalette16 IceColors_p = CRGBPalette16(CRGB::Black, CRGB::Blue, CRGB::Aqua, CRGB::White);
-const CRGBPalette16 palettes[] = {
-    RainbowColors_p,
-    RainbowStripeColors_p,
-    CloudColors_p,
-    LavaColors_p,
-    OceanColors_p,
-    ForestColors_p,
-    PartyColors_p,
-    HeatColors_p,
-    IceColors_p,
-};
-
-const uint8_t palette_count = ARRAY_SIZE(palettes);
 
 RainbowRipple rr1 = RainbowRipple(leds0, LEN0, random8(), 5, 5);
 RainbowRipple rr2 = RainbowRipple(leds1, LEN1, random8(), 17, random16(VELOCITY_MIN, VELOCITY_MAX));
@@ -143,7 +61,6 @@ void setup()
     FastLED.showColor(CRGB::Black);
 
 #ifdef DEBUG_PRINTING_
-    Serial.println("Setting pin D1 to red");
     int i;
     for (i = 0; i < LEN0; i++)
     {
@@ -168,38 +85,51 @@ void setup()
 
     FastLED.setBrightness(get_brightness());
     FastLED.show();
+
+    current_pattern = random_pattern();
 }
 
 void loop()
 {
-    offset = beat8(speed);
-    patterns[current_pattern_index]();
-    FastLED.setBrightness(get_brightness());
-    FastLED.show();
-
-    EVERY_N_SECONDS(30)
+    if (WiFi.status() != WL_CONNECTED)
     {
-        current_pattern_index = (current_pattern_index + 1) % pattern_count;
-        if (current_pattern_index == 0)
-        {
-            current_pallette_index = (current_pallette_index + 1) % palette_count;
-        }
+        wifi_init();
     }
-}
 
-void loop2()
-{
-    switch (current_pattern)
+    // Handle any MQTT updates
+    mqtt_client.loop();
+
+    switch (g_mode)
     {
+    case (LEDMODE_INDIVIDUAL):
+        mode_individual();
+        break;
+    case (LEDMODE_UNIFIED):
+        mode_unified();
+        break;
     default:
-        default_pattern();
+        mode_random();
         break;
     }
 
-#ifdef DEBUG_PRINTING_
-    Serial.print("Brightness: ");
-    Serial.println(get_brightness());
+    FastLED.setBrightness(get_brightness());
+    FastLED.show();
+
+#ifdef MQTTLED_DEBUG
+    EVERY_N_SECONDS(2)
+    {
+        Serial.printf("Mode: %d  Palette: %d  Pattern: %d\n", g_mode, g_palette, g_pattern);
+    }
 #endif
+}
+
+void mode_individual()
+{
+    rr1.Draw();
+    rr2.Draw();
+    rr3.Draw();
+    rr4.Draw();
+
     FastLED.setBrightness(get_brightness());
     FastLED.show();
 
@@ -273,19 +203,57 @@ void loop2()
     delay(1);
 }
 
-void default_pattern()
+void mode_unified()
 {
-    rr1.Draw(blend_factor);
-    rr2.Draw(blend_factor);
-    rr3.Draw(blend_factor);
-    rr4.Draw(blend_factor);
+    // Run the current palette and pattern
+    offset = beat8(speed);
+
+    if (g_pattern == LEDPATTERN_randomizePalette)
+    {
+        patterns[current_pattern]();
+    }
+    else
+    {
+        patterns[g_pattern]();
+    }
+    FastLED.setBrightness(get_brightness());
+    FastLED.show();
+
+    EVERY_N_SECONDS(3)
+    {
+        current_pattern = random_pattern();
+#ifdef DEBUG_PRINTING_
+        Serial.printf("New random pattern: %d\n", current_pattern);
+#endif
+    }
+}
+
+void mode_random()
+{
+    // Update the LEDs
+    mode_unified();
+
+    // Every 30 seconds, update the pattern
+    EVERY_N_SECONDS(30)
+    {
+        g_palette = random8(palette_count);
+
+        g_pattern = random_pattern();
+    }
+}
+
+uint8_t random_pattern()
+{
+    // 0 is a non-pattern sentinal value
+    return random8(pattern_count - 1) + 1;
 }
 
 uint8_t get_brightness()
 {
-#ifdef DEBUG_PRINTING_
-    Serial.println(analogRead(POT_PIN));
-#endif
+    // #ifdef DEBUG_PRINTING_
+    //     Serial.print("Brightness: ");
+    //     Serial.println(get_brightness());
+    // #endif
 
     return map(analogRead(POT_PIN), 0, 1023, 0, 255);
 }
@@ -310,11 +278,15 @@ void assign_led(uint16_t index, CRGB new_color)
     }
 }
 
-void beatsin8Pallette()
+void randomizePalette()
+{
+}
+
+void beatsin8Palette()
 {
     for (uint16_t i = 0; i < NUM_LEDS; i++)
     {
-        assign_led(i, ColorFromPalette(palettes[current_pallette_index], coordsX[i], beatsin8(speed * 40, 0, 255, 0, coordsX[i] + coordsY[i])));
+        assign_led(i, ColorFromPalette(palettes[g_palette], coordsX[i], beatsin8(speed * 40, 0, 255, 0, coordsX[i] + coordsY[i])));
     }
 }
 
@@ -322,7 +294,7 @@ void clockwisePalette()
 {
     for (uint16_t i = 0; i < NUM_LEDS; i++)
     {
-        assign_led(i, ColorFromPalette(palettes[current_pallette_index], offset + angles[i]));
+        assign_led(i, ColorFromPalette(palettes[g_palette], offset + angles[i]));
     }
 }
 
@@ -330,7 +302,7 @@ void counterClockwisePalette()
 {
     for (uint16_t i = 0; i < NUM_LEDS; i++)
     {
-        assign_led(i, ColorFromPalette(palettes[current_pallette_index], offset - angles[i]));
+        assign_led(i, ColorFromPalette(palettes[g_palette], offset - angles[i]));
     }
 }
 
@@ -338,7 +310,7 @@ void outwardPalette()
 {
     for (uint16_t i = 0; i < NUM_LEDS; i++)
     {
-        assign_led(i, ColorFromPalette(palettes[current_pallette_index], offset - radii[i]));
+        assign_led(i, ColorFromPalette(palettes[g_palette], offset - radii[i]));
     }
 }
 
@@ -346,7 +318,7 @@ void inwardPalette()
 {
     for (uint16_t i = 0; i < NUM_LEDS; i++)
     {
-        assign_led(i, ColorFromPalette(palettes[current_pallette_index], offset + radii[i]));
+        assign_led(i, ColorFromPalette(palettes[g_palette], offset + radii[i]));
     }
 }
 
@@ -354,7 +326,7 @@ void northPalette()
 {
     for (uint16_t i = 0; i < NUM_LEDS; i++)
     {
-        assign_led(i, ColorFromPalette(palettes[current_pallette_index], offset - coordsY[i]));
+        assign_led(i, ColorFromPalette(palettes[g_palette], offset - coordsY[i]));
     }
 }
 
@@ -362,7 +334,7 @@ void northEastPalette()
 {
     for (uint16_t i = 0; i < NUM_LEDS; i++)
     {
-        assign_led(i, ColorFromPalette(palettes[current_pallette_index], offset - (coordsX[i] + coordsY[i])));
+        assign_led(i, ColorFromPalette(palettes[g_palette], offset - (coordsX[i] + coordsY[i])));
     }
 }
 
@@ -370,7 +342,7 @@ void eastPalette()
 {
     for (uint16_t i = 0; i < NUM_LEDS; i++)
     {
-        assign_led(i, ColorFromPalette(palettes[current_pallette_index], offset - coordsX[i]));
+        assign_led(i, ColorFromPalette(palettes[g_palette], offset - coordsX[i]));
     }
 }
 
@@ -378,7 +350,7 @@ void southEastPalette()
 {
     for (uint16_t i = 0; i < NUM_LEDS; i++)
     {
-        assign_led(i, ColorFromPalette(palettes[current_pallette_index], offset - coordsX[i] + coordsY[i]));
+        assign_led(i, ColorFromPalette(palettes[g_palette], offset - coordsX[i] + coordsY[i]));
     }
 }
 
@@ -386,7 +358,7 @@ void southPalette()
 {
     for (uint16_t i = 0; i < NUM_LEDS; i++)
     {
-        assign_led(i, ColorFromPalette(palettes[current_pallette_index], offset + coordsY[i]));
+        assign_led(i, ColorFromPalette(palettes[g_palette], offset + coordsY[i]));
     }
 }
 
@@ -394,7 +366,7 @@ void southWestPalette()
 {
     for (uint16_t i = 0; i < NUM_LEDS; i++)
     {
-        assign_led(i, ColorFromPalette(palettes[current_pallette_index], offset + coordsX[i] + coordsY[i]));
+        assign_led(i, ColorFromPalette(palettes[g_palette], offset + coordsX[i] + coordsY[i]));
     }
 }
 
@@ -402,7 +374,7 @@ void westPalette()
 {
     for (uint16_t i = 0; i < NUM_LEDS; i++)
     {
-        assign_led(i, ColorFromPalette(palettes[current_pallette_index], offset + coordsX[i]));
+        assign_led(i, ColorFromPalette(palettes[g_palette], offset + coordsX[i]));
     }
 }
 
@@ -410,6 +382,6 @@ void northWestPalette()
 {
     for (uint16_t i = 0; i < NUM_LEDS; i++)
     {
-        assign_led(i, ColorFromPalette(palettes[current_pallette_index], offset + coordsX[i] - coordsY[i]));
+        assign_led(i, ColorFromPalette(palettes[g_palette], offset + coordsX[i] - coordsY[i]));
     }
 }
