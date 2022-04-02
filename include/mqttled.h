@@ -66,10 +66,9 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
 
 void wifi_init()
 {
-    int tries = 0;
-
     WiFi.mode(WIFI_STA);
 #ifdef MQTTLED_DEBUG
+    int tries = 0;
     Serial.print("Hostname: ");
     Serial.println(WiFi.hostname());
     Serial.print("MAC: ");

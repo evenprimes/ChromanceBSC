@@ -40,7 +40,6 @@ uint8_t current_pattern = 0;
 uint8_t speed = 30;
 uint8_t offset = 0; // rotating "base color" used by many of the patterns
 uint16_t new_velocity = 0;
-uint16_t pot_level = 0;
 
 RainbowRipple rr1 = RainbowRipple(leds0, LEN0, random8(), 5, 5);
 RainbowRipple rr2 = RainbowRipple(leds1, LEN1, random8(), 17, random16(VELOCITY_MIN, VELOCITY_MAX));
@@ -125,10 +124,10 @@ void loop()
 
 void mode_individual()
 {
-    rr1.Draw();
-    rr2.Draw();
-    rr3.Draw();
-    rr4.Draw();
+    rr1.Draw(blend_factor);
+    rr2.Draw(blend_factor);
+    rr3.Draw(blend_factor);
+    rr4.Draw(blend_factor);
 
     FastLED.setBrightness(get_brightness());
     FastLED.show();
