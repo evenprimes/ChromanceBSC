@@ -8,13 +8,12 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include "ledhelpers.h"
-#include "localsecrets.h"
+#include "localsecrets.h" // <- You need to make this with the values below
 
 // These need to be defined somewhere!
 // const char *ssid = "localssid";
 // const char *password = "wifipassword";
-
-const char *mqtt_server = "192.168.1.60";
+// const char *mqtt_server = "192.168.1.60";
 const uint16_t mqtt_port = 1883;
 
 WiFiClient wifi_client;
