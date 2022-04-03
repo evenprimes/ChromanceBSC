@@ -37,7 +37,7 @@ uint8_t blend_factor = 20;
 uint8_t starting_hue = 0;
 uint8_t pattern_number = 0;
 uint8_t current_pattern = 0;
-uint8_t speed = 30;
+// uint8_t speed = 30;
 uint8_t offset = 0; // rotating "base color" used by many of the patterns
 uint16_t new_velocity = 0;
 

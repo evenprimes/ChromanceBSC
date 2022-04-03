@@ -50,6 +50,10 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
     {
         g_palette = message.toInt();
     }
+    else if (s_topic.endsWith("speed"))
+    {
+        speed = message.toInt();
+    }
 
     // String str_msg = String(message);
     // if (str_msg.equals("ON"))
@@ -106,6 +110,7 @@ void wifi_init()
     mqtt_client.subscribe("ledsculpture/mode");
     mqtt_client.subscribe("ledsculpture/pattern");
     mqtt_client.subscribe("ledsculpture/palette");
+    mqtt_client.subscribe("ledsculpture/speed");
 }
 
 #endif

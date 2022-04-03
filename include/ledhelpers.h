@@ -5,13 +5,17 @@
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
+// The mode, pattern, and palatte constants are more to make developing helper
+// apps easy, as opposed to something that I need in this codebase.
+// Also, I now think it was a mistake to use "0" as the random palette, I should have used
+// a -1 or something. 
+
 // Modes
 const int8_t LEDMODE_INDIVIDUAL = 0;
 const int8_t LEDMODE_UNIFIED = 1;
 const int8_t LEDMODE_RANDOM = 2;
 
 // Patterns
-
 const int8_t LEDPATTERN_randomizePalette = 0;
 const int8_t LEDPATTERN_beatsin8Palette = 1;
 const int8_t LEDPATTERN_clockwisePalette = 2;
@@ -27,7 +31,7 @@ const int8_t LEDPATTERN_southWestPalette = 11;
 const int8_t LEDPATTERN_westPalette = 12;
 const int8_t LEDPATTERN_northWestPalette = 13;
 
-// Palettes 
+// Palettes
 const int8_t LEDPALETTE_RainbowColors = 0;
 const int8_t LEDPALETTE_RainbowStripeColors = 1;
 const int8_t LEDPALETTE_CloudColors = 2;
@@ -41,6 +45,7 @@ const int8_t LEDPALETTE_IceColors = 8;
 int8 g_mode = LEDMODE_INDIVIDUAL;
 int8 g_pattern = LEDPATTERN_randomizePalette;
 int8 g_palette = LEDPALETTE_RainbowColors;
+uint8_t speed = 15;
 
 int new_direction(int current_direction, int current_position, int led_count)
 {
