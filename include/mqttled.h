@@ -14,7 +14,7 @@
 // const char *ssid = "localssid";
 // const char *password = "wifipassword";
 // const char *mqtt_server = "192.168.1.60";
-const uint16_t mqtt_port = 1883;
+// const uint16_t mqtt_port = 1883;
 
 WiFiClient wifi_client;
 PubSubClient mqtt_client(wifi_client);
