@@ -92,3 +92,5 @@ I'm running with a
 
 I'm mostly a Python guy, so I kind of write Python even in C++ right now. Naming
 is a bit... off because I did a lot of copy/paste programming. /shrug
+
+*Version 2022.1.0*

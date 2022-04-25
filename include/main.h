@@ -1,6 +1,8 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
+const String __VERSION__ = "2022.1.0";
+
 #define FASTLED_INTERNAL 1 // Suppresses the compilation banner from FastLED
 #include <FastLED.h>
 #include "ledhelpers.h"
